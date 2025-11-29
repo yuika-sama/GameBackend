@@ -42,9 +42,16 @@ const swaggerOptions = {
 const swaggerSpecs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000, // Tăng timeout lên 30s
+  socketTimeoutMS: 45000,
+})
   .then(() => console.log('✅ Đã kết nối MongoDB thành công'))
-  .catch((err) => console.error('❌ Lỗi kết nối MongoDB:', err));
+  .catch((err) => {
+    console.error('❌ Lỗi kết nối MongoDB:', err);
+    console.error('Connection string:', process.env.MONGO_URI?.replace(/\/\/.*@/, '//<hidden>@'));
+  });
+
 
 
 // ======================================
