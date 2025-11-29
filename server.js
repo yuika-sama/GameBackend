@@ -10,7 +10,7 @@ const Player = require('./models/Player');
 const app = express();
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.vercel.app'] 
+    ? ['game-backend-wheat.vercel.app'] 
     : '*',
   credentials: true
 };
