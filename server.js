@@ -8,10 +8,19 @@ require('dotenv').config();
 const Player = require('./models/Player');
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-frontend-domain.vercel.app'] 
+    : '*',
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : `http://localhost:${PORT}`;
 
 const swaggerOptions = {
   definition: {
@@ -23,8 +32,8 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${PORT}`,
-        description: 'Local server',
+        url: BASE_URL,
+        description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Local server',
       },
     ],
   },
@@ -262,7 +271,12 @@ app.get('/get_all_players', async (req, res) => {
 //======================================
 // ===========Server====================
 //======================================
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📄 Swagger Docs at http://localhost:${PORT}/api-docs`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📄 Swagger Docs at http://localhost:${PORT}/api-docs`);
+  });
+}
+
+// Export cho Vercel
+module.exports = app;
