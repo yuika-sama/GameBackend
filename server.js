@@ -134,75 +134,87 @@ app.post('/add_player', async (req, res) => {
 /**
  * @swagger
  * /update_score/{id}:
- *   post:
- *     summary: Thêm lượt chơi (cập nhật điểm)
- *     tags: [Player]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID của người chơi
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - wave
- *               - score
- *               - playtime
- *             properties:
- *               wave:
- *                 type: integer
- *                 example: 5
- *               score:
- *                 type: integer
- *                 example: 2500
- *               playtime:
- *                 type: integer
- *                 description: Thời gian chơi (giây)
- *                 example: 120
- *     responses:
- *       200:
- *         description: Cập nhật thành công
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Player'
- *       404:
- *         description: Không tìm thấy người chơi
+ * patch:
+ * summary: Thêm lượt chơi (cập nhật điểm)
+ * description: Sử dụng phương thức PATCH để cập nhật lịch sử chơi của người chơi.
+ * tags: [Player]
+ * parameters:
+ * - in: path
+ * name: id
+ * schema:
+ * type: string
+ * required: true
+ * description: ID của người chơi
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * required:
+ * - wave
+ * - score
+ * - playtime
+ * properties:
+ * wave:
+ * type: integer
+ * example: 5
+ * score:
+ * type: integer
+ * example: 2500
+ * playtime:
+ * type: integer
+ * description: Thời gian chơi (giây)
+ * example: 120
+ * responses:
+ * 200:
+ * description: Cập nhật thành công
+ * content:
+ * application/json:
+ * schema:
+ * $ref: '#/components/schemas/Player'
+ * 404:
+ * description: Không tìm thấy người chơi
+ * 400:
+ * description: Dữ liệu đầu vào không hợp lệ
  */
-app.post('/update_score/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { wave, score, playtime } = req.body;
-        
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: 'ID không hợp lệ' });
-        }
-        
-        if (wave === undefined || score === undefined || playtime === undefined) {
-            return res.status(400).json({ error: 'wave, score và playtime là bắt buộc' });
-        }
-        
-        const updatedPlayer = await Player.findByIdAndUpdate(
-            id,
-            { $push: { history: { wave: wave, score: score, playtime: playtime } } },
-            { new: true }
-        );
+app.patch('/update_score/:id', async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { wave, score, playtime } = req.body;
+      
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({ error: 'ID không hợp lệ' });
+      }
+      
+      if (wave === undefined || score === undefined || playtime === undefined) {
+          return res.status(400).json({ error: 'wave, score và playtime là bắt buộc' });
+      }
+      
+      const updatedPlayer = await Player.findByIdAndUpdate(
+          id,
+          { 
+              $push: { 
+                  history: { 
+                      wave: wave, 
+                      score: score, 
+                      playtime: playtime,
+                      playedAt: new Date()
+                  } 
+              } 
+          },
+          { new: true, runValidators: true }
+      );
 
-        if (!updatedPlayer) {
-            return res.status(404).json({ error: 'Người chơi không tìm thấy' });
-        }
+      if (!updatedPlayer) {
+          return res.status(404).json({ error: 'Người chơi không tìm thấy' });
+      }
 
-        res.status(200).json(updatedPlayer);
-    } catch (error) {
-        res.status(500).json({ error: 'Lỗi khi cập nhật điểm số', details: error.message });
-    }
-})
+      res.status(200).json(updatedPlayer);
+  } catch (error) {
+      res.status(500).json({ error: 'Lỗi khi cập nhật điểm số', details: error.message });
+  }
+});
 
 
 /**
