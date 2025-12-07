@@ -9,10 +9,15 @@ const Player = require('./models/Player');
 
 const app = express();
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['game-backend-wheat.vercel.app'] 
-    : '*',
-  credentials: true
+  origin: '*', 
+  // origin: [
+  //   'https://game-backend-wheat.vercel.app', 
+  //   'https://itch.io', 
+  //   'https://html-classic.itch.zone' 
+  // ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
 app.use(express.json());
